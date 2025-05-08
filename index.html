@@ -1,1 +1,420 @@
-test
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>WOOF Token Circulating Supply Checker</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 10px;
+            background-color: #f4f4f9;
+            font-size: 16px;
+        }
+        h1, h2 {
+            color: #333;
+            margin: 10px 0;
+            text-align: center;
+        }
+        h1 {
+            font-size: 24px;
+        }
+        h2 {
+            font-size: 20px;
+        }
+        .container {
+            max-width: 100%;
+            width: 100%;
+            margin: 0 auto;
+            padding: 15px;
+            background: #fff;
+            border-radius: 8px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            box-sizing: border-box;
+        }
+        .address-list {
+            margin: 15px 0;
+        }
+        .address-item {
+            margin: 10px 0;
+            font-size: 14px;
+            padding: 8px;
+            background: #f9f9f9;
+            border-radius: 5px;
+            border: 1px solid #ddd;
+            word-wrap: break-word; /* Ensure long addresses wrap */
+        }
+        .address-item span.label {
+            font-weight: bold;
+            color: #2c3e50;
+            display: block;
+            margin-bottom: 4px;
+        }
+        .address-item span.address {
+            color: #7f8c8d;
+            display: block;
+            margin-bottom: 4px;
+            font-family: monospace; /* Better for addresses */
+            font-size: 13px;
+        }
+        .address-item .balance {
+            color: #4CAF50;
+            font-weight: bold;
+            display: block;
+        }
+        label {
+            display: block;
+            margin: 10px 0 5px;
+            font-weight: bold;
+            font-size: 14px;
+        }
+        input[type="text"] {
+            width: 100%;
+            padding: 8px;
+            margin-bottom: 10px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            box-sizing: border-box;
+            font-size: 14px;
+        }
+        button {
+            padding: 10px 20px;
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            margin: 5px 5px 5px 0;
+            font-size: 14px;
+        }
+        button:hover {
+            background-color: #45a049;
+        }
+        #status {
+            margin-top: 15px;
+            white-space: pre-wrap;
+            background: #f9f9f9;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            max-height: 200px;
+            overflow-y: auto;
+            font-size: 13px;
+        }
+        .result {
+            margin-top: 15px;
+            padding: 10px;
+            background: #e7f3ff;
+            border: 1px solid #b3d4fc;
+            border-radius: 4px;
+            font-size: 14px;
+        }
+        .result h3 {
+            margin: 0 0 10px 0;
+            font-size: 18px;
+        }
+        .result p {
+            margin: 5px 0;
+        }
+
+        /* Responsive adjustments */
+        @media (max-width: 600px) {
+            body {
+                padding: 5px;
+                font-size: 14px;
+            }
+            h1 {
+                font-size: 20px;
+            }
+            h2 {
+                font-size: 18px;
+            }
+            .container {
+                padding: 10px;
+            }
+            .address-item {
+                font-size: 12px;
+                padding: 6px;
+            }
+            .address-item span.label {
+                font-size: 13px;
+            }
+            .address-item span.address {
+                font-size: 11px;
+            }
+            .address-item .balance {
+                font-size: 12px;
+            }
+            button {
+                font-size: 12px;
+                padding: 8px 15px;
+            }
+            #status {
+                font-size: 11px;
+                max-height: 150px;
+            }
+            .result {
+                font-size: 12px;
+            }
+            .result h3 {
+                font-size: 16px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>WOOF Token Circulating Supply Checker (Shibarium)</h1>
+        <div>
+            <label for="rpcUrl">Shibarium RPC URL:</label>
+            <input type="text" id="rpcUrl" value="https://www.shibrpc.com" placeholder="Enter Shibarium RPC URL">
+        </div>
+        <h2>Fixed Addresses</h2>
+        <div class="address-list">
+            <div class="address-item"><span class="label">WOOF Token Contract:</span><span class="address">0xD0daa7B6ff1B40d3cc6F0B2Cf7E85cB993D1c834</span><span class="balance" id="woof-balance"></span></div>
+            <div class="address-item"><span class="label">veWOOF:</span><span class="address">0xb4cb5dB549e483539EA38d44c4109F3B25259847</span><span class="balance" id="vewoof-balance"></span></div>
+            <div class="address-item"><span class="label">BONE/WOOF:</span><span class="address">0xE7481D3BB7ae1f11E17D64244102044922Cf565F</span><span class="balance" id="bone-woof-balance"></span></div>
+            <div class="address-item"><span class="label">WOOF/FEED:</span><span class="address">0xa636D7874FFD251da8901Ba8751B23f354544BcC</span><span class="balance" id="woof-feed-balance"></span></div>
+            <div class="address-item"><span class="label">SHIBS/WOOF:</span><span class="address">0xB4b4aCB6eA0680F7deA508f96367FeF30DD82df2</span><span class="balance" id="shibs-woof-balance"></span></div>
+            <div class="address-item"><span class="label">SOME/WOOF:</span><span class="address">0x2928C9b42c386404ba1675bA374Bd4e5a617f559</span><span class="balance" id="some-woof-balance"></span></div>
+            <div class="address-item"><span class="label">SHIPA/WOOF:</span><span class="address">0x61C65f6B15996200F0Cf8C4Ef27b6b31d4f30655</span><span class="balance" id="shipa-woof-balance"></span></div>
+            <div class="address-item"><span class="label">CHIKA/WOOF:</span><span class="address">0xEFaEd1af80DE622516c9B4D007C31Db618Ff6944</span><span class="balance" id="chika-woof-balance"></span></div>
+            <div class="address-item"><span class="label">WOW/WOOF:</span><span class="address">0x45567962A831EFa7B30273f2B4029e35780C9505</span><span class="balance" id="wow-woof-balance"></span></div>
+            <div class="address-item"><span class="label">CLUB/WOOF:</span><span class="address">0xf9a9b8199270e63C0003f81F0eA0157254aAAA76</span><span class="balance" id="club-woof-balance"></span></div>
+            <div class="address-item"><span class="label">Pending 1:</span><span class="address">0x072e2322018E15B006A1a130002df414D938b6cf</span><span class="balance" id="pending-1-balance"></span></div>
+            <div class="address-item"><span class="label">Pending 2:</span><span class="address">0x0bC0b80141859F35F1913873354d9Db3f4D3C105</span><span class="balance" id="pending-2-balance"></span></div>
+            <div class="address-item"><span class="label">Pending 3:</span><span class="address">0x239530878d34877A389020460a924779e5d7BD51</span><span class="balance" id="pending-3-balance"></span></div>
+            <div class="address-item"><span class="label">Pending 4:</span><span class="address">0xc5a076cad94176c2996B32d8466Be1cE757FAa27</span><span class="balance" id="pending-4-balance"></span></div>
+            <div class="address-item"><span class="label">Pending 5:</span><span class="address">0x30d9159c8c9e403A0e9597837052F70cf8eC362c</span><span class="balance" id="pending-5-balance"></span></div>
+            <div class="address-item"><span class="label">Pending 6:</span><span class="address">0x0cba8754C2DF4ada558f1a1e54490e193e9D9252</span><span class="balance" id="pending-6-balance"></span></div>
+            <div class="address-item"><span class="label">Pending 7:</span><span class="address">0x315A2D7211B6aCe79e56C61287191736dec4486e</span><span class="balance" id="pending-7-balance"></span></div>
+            <div class="address-item"><span class="label">Pending 8:</span><span class="address">0xef7c771E9BCEC2821a6743C3a8D9aCcFae016Af0</span><span class="balance" id="pending-8-balance"></span></div>
+            <div class="address-item"><span class="label">Pending 9:</span><span class="address">0xb28ba49b3a608C4355408e1DF7CFd9bA95780513</span><span class="balance" id="pending-9-balance"></span></div>
+            <div class="address-item"><span class="label">Pending 10:</span><span class="address">0xF82389eCfc174536E952BbA360a3ED832C5547Ed</span><span class="balance" id="pending-10-balance"></span></div>
+            <div class="address-item"><span class="label">Pending 11:</span><span class="address">0x4E325b31592c1ad0E351fb85A197d27C3f205641</span><span class="balance" id="pending-11-balance"></span></div>
+            <div class="address-item"><span class="label">Pending 12:</span><span class="address">0x037bae126Bc05cCEd3ba858847B7B7A79A268C3e</span><span class="balance" id="pending-12-balance"></span></div>
+            <div class="address-item"><span class="label">Pending 13:</span><span class="address">0x6662A2a7Be6E1fF8fa31FC3420C539dEc2fEd3C2</span><span class="balance" id="pending-13-balance"></span></div>
+            <div class="address-item"><span class="label">Pending 14:</span><span class="address">0x5BbDF85138415d48c9A5Bc64BAA41761D68ECA55</span><span class="balance" id="pending-14-balance"></span></div>
+            <div class="address-item"><span class="label">Pending 15:</span><span class="address">0xc9127689f2AEe797Ba5662B8D5E0808763d59334</span><span class="balance" id="pending-15-balance"></span></div>
+            <div class="address-item"><span class="label">Pending 16:</span><span class="address">0xD98F821eFdc29467498aaF8c12465000CE18d44e</span><span class="balance" id="pending-16-balance"></span></div>
+            <div class="address-item"><span class="label">WOOF/PNUTSHIB:</span><span class="address">0x94927f864ce11EC04Fe568577CE35B06cF7058eC</span><span class="balance" id="woof-pnutshib-balance"></span></div>
+            <div class="address-item"><span class="label">WOOF/OldShibmap:</span><span class="address">0x66558BF675a1f498bAD9e9F641f0A9a9Ee91Ede5</span><span class="balance" id="woof-oldshibmap-balance"></span></div>
+            <div class="address-item"><span class="label">LC/WOOF:</span><span class="address">0x92f749AA54494b9468B7B5da90a49cE3bD865886</span><span class="balance" id="lc-woof-balance"></span></div>
+            <div class="address-item"><span class="label">KAAL/WOOF:</span><span class="address">0x1799C6130Dadf0D084d97d4830Cab70Edee49751</span><span class="balance" id="kaal-woof-balance"></span></div>
+            <div class="address-item"><span class="label">SHY/WOOF:</span><span class="address">0xE2BceF434a56d2Fe3342A381bfe9fc6Ccea6A7eD</span><span class="balance" id="shy-woof-balance"></span></div>
+            <div class="address-item"><span class="label">MPEN/WOOF:</span><span class="address">0x2B8Ab21b1Edc234664B5431891617347b6b30Aa3</span><span class="balance" id="mpen-woof-balance"></span></div>
+            <div class="address-item"><span class="label">SIYC/WOOF:</span><span class="address">0x07c0401F61e95C085ABbac1C90b6457BcAe4310d</span><span class="balance" id="siyc-woof-balance"></span></div>
+            <div class="address-item"><span class="label">PUPPY/WOOF:</span><span class="address">0x72aDE398Ad58BfbE17cce2Ad5F84074eE736Ece6</span><span class="balance" id="puppy-woof-balance"></span></div>
+            <div class="address-item"><span class="label">APES/WOOF:</span><span class="address">0xAd7908F6F34C84eD1F24323FeB1508E00D7ea1EF</span><span class="balance" id="apes-woof-balance"></span></div>
+            <div class="address-item"><span class="label">WOOF/SDOG:</span><span class="address">0xba0549c3c478d32CA92802A10313Ccc60eD081fb</span><span class="balance" id="woof-sdog-balance"></span></div>
+            <div class="address-item"><span class="label">ELON/WOOF:</span><span class="address">0x8d4C2E2D5c4e3B72c9be0db47E60121150046C32</span><span class="balance" id="elon-woof-balance"></span></div>
+            <div class="address-item"><span class="label">WOOF/BONES:</span><span class="address">0xE424E1d17EF970A1b04E84540f5123fC5635D77d</span><span class="balance" id="woof-bones-balance"></span></div>
+            <div class="address-item"><span class="label">Snow Ball:</span><span class="address">0x2778f7E40D90DB18203Ec31C9c5F84fde6cf6763</span><span class="balance" id="snow-ball-balance"></span></div>
+            <div class="address-item"><span class="label">WOOF/BINU:</span><span class="address">0x9D7C932d2857ffdc61851276a46A3c3570129012</span><span class="balance" id="woof-binu-balance"></span></div>
+            <div class="address-item"><span class="label">SOON/WOOF:</span><span class="address">0xBA29bC84B30B6f478846B06EF7a1eD52f55A0066</span><span class="balance" id="soon-woof-balance"></span></div>
+            <div class="address-item"><span class="label">WOOFS/WOOF:</span><span class="address">0x7c08cb6688e9515FC5d629Bae7056cF8d5E75Bb9</span><span class="balance" id="woofs-woof-balance"></span></div>
+            <div class="address-item"><span class="label">PEPE/WOOF:</span><span class="address">0x36d71Cd4f1dDEE3ED04Af24E0eD4EAC16C923DAD</span><span class="balance" id="pepe-woof-balance"></span></div>
+            <div class="address-item"><span class="label">DOGES/WOOF:</span><span class="address">0xF01dfd25bc71B5E27C60De6F1cBF9b5dA3ef6029</span><span class="balance" id="doges-woof-balance"></span></div>
+            <div class="address-item"><span class="label">PUNK/WOOF:</span><span class="address">0xb2Eb3fDC0F64683931Ce1dAEb96aFAcFae0730bd</span><span class="balance" id="punk-woof-balance"></span></div>
+            <div class="address-item"><span class="label">Tang/WOOF:</span><span class="address">0xf9d410BEd25Cc0cc6f078020149E4944C672Cc42</span><span class="balance" id="tang-woof-balance"></span></div>
+            <div class="address-item"><span class="label">WOOF/Zen:</span><span class="address">0x505fccCf8b0142f14953c77e6A507C09cf131b03</span><span class="balance" id="woof-zen-balance"></span></div>
+            <div class="address-item"><span class="label">WOOF/SBTC:</span><span class="address">0x700e68C03e41fAa9cA94aaD8d78fAd06d374ffB3</span><span class="balance" id="woof-sbtc-balance"></span></div>
+        </div>
+        <button onclick="checkCirculatingSupply()">Check Circulating Supply</button>
+        <button onclick="clearStatus()">Clear Status</button>
+        <div id="status">Status: Ready</div>
+        <div id="result" class="result"></div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/web3@1.7.4/dist/web3.min.js"></script>
+    <script>
+        // WOOF Token Contract Address
+        const WOOF_CONTRACT_ADDRESS = "0xD0daa7B6ff1B40d3cc6F0B2Cf7E85cB993D1c834";
+
+        // Address mapping for balance display
+        const ADDRESSES_TO_CHECK = [
+            { name: "veWOOF", address: "0xb4cb5dB549e483539EA38d44c4109F3B25259847", id: "vewoof-balance" },
+            { name: "BONE/WOOF", address: "0xE7481D3BB7ae1f11E17D64244102044922Cf565F", id: "bone-woof-balance" },
+            { name: "WOOF/FEED", address: "0xa636D7874FFD251da8901Ba8751B23f354544BcC", id: "woof-feed-balance" },
+            { name: "SHIBS/WOOF", address: "0xB4b4aCB6eA0680F7deA508f96367FeF30DD82df2", id: "shibs-woof-balance" },
+            { name: "SOME/WOOF", address: "0x2928C9b42c386404ba1675bA374Bd4e5a617f559", id: "some-woof-balance" },
+            { name: "SHIPA/WOOF", address: "0x61C65f6B15996200F0Cf8C4Ef27b6b31d4f30655", id: "shipa-woof-balance" },
+            { name: "CHIKA/WOOF", address: "0xEFaEd1af80DE622516c9B4D007C31Db618Ff6944", id: "chika-woof-balance" },
+            { name: "WOW/WOOF", address: "0x45567962A831EFa7B30273f2B4029e35780C9505", id: "wow-woof-balance" },
+            { name: "CLUB/WOOF", address: "0xf9a9b8199270e63C0003f81F0eA0157254aAAA76", id: "club-woof-balance" },
+            { name: "Pending 1", address: "0x072e2322018E15B006A1a130002df414D938b6cf", id: "pending-1-balance" },
+            { name: "Pending 2", address: "0x0bC0b80141859F35F1913873354d9Db3f4D3C105", id: "pending-2-balance" },
+            { name: "Pending 3", address: "0x239530878d34877A389020460a924779e5d7BD51", id: "pending-3-balance" },
+            { name: "Pending 4", address: "0xc5a076cad94176c2996B32d8466Be1cE757FAa27", id: "pending-4-balance" },
+            { name: "Pending 5", address: "0x30d9159c8c9e403A0e9597837052F70cf8eC362c", id: "pending-5-balance" },
+            { name: "Pending 6", address: "0x0cba8754C2DF4ada558f1a1e54490e193e9D9252", id: "pending-6-balance" },
+            { name: "Pending 7", address: "0x315A2D7211B6aCe79e56C61287191736dec4486e", id: "pending-7-balance" },
+            { name: "Pending 8", address: "0xef7c771E9BCEC2821a6743C3a8D9aCcFae016Af0", id: "pending-8-balance" },
+            { name: "Pending 9", address: "0xb28ba49b3a608C4355408e1DF7CFd9bA95780513", id: "pending-9-balance" },
+            { name: "Pending 10", address: "0xF82389eCfc174536E952BbA360a3ED832C5547Ed", id: "pending-10-balance" },
+            { name: "Pending 11", address: "0x4E325b31592c1ad0E351fb85A197d27C3f205641", id: "pending-11-balance" },
+            { name: "Pending 12", address: "0x037bae126Bc05cCEd3ba858847B7B7A79A268C3e", id: "pending-12-balance" },
+            { name: "Pending 13", address: "0x6662A2a7Be6E1fF8fa31FC3420C539dEc2fEd3C2", id: "pending-13-balance" },
+            { name: "Pending 14", address: "0x5BbDF85138415d48c9A5Bc64BAA41761D68ECA55", id: "pending-14-balance" },
+            { name: "Pending 15", address: "0xc9127689f2AEe797Ba5662B8D5E0808763d59334", id: "pending-15-balance" },
+            { name: "Pending 16", address: "0xD98F821eFdc29467498aaF8c12465000CE18d44e", id: "pending-16-balance" },
+            { name: "WOOF/PNUTSHIB", address: "0x94927f864ce11EC04Fe568577CE35B06cF7058eC", id: "woof-pnutshib-balance" },
+            { name: "WOOF/OldShibmap", address: "0x66558BF675a1f498bAD9e9F641f0A9a9Ee91Ede5", id: "woof-oldshibmap-balance" },
+            { name: "LC/WOOF", address: "0x92f749AA54494b9468B7B5da90a49cE3bD865886", id: "lc-woof-balance" },
+            { name: "KAAL/WOOF", address: "0x1799C6130Dadf0D084d97d4830Cab70Edee49751", id: "kaal-woof-balance" },
+            { name: "SHY/WOOF", address: "0xE2BceF434a56d2Fe3342A381bfe9fc6Ccea6A7eD", id: "shy-woof-balance" },
+            { name: "MPEN/WOOF", address: "0x2B8Ab21b1Edc234664B5431891617347b6b30Aa3", id: "mpen-woof-balance" },
+            { name: "SIYC/WOOF", address: "0x07c0401F61e95C085ABbac1C90b6457BcAe4310d", id: "siyc-woof-balance" },
+            { name: "PUPPY/WOOF", address: "0x72aDE398Ad58BfbE17cce2Ad5F84074eE736Ece6", id: "puppy-woof-balance" },
+            { name: "APES/WOOF", address: "0xAd7908F6F34C84eD1F24323FeB1508E00D7ea1EF", id: "apes-woof-balance" },
+            { name: "WOOF/SDOG", address: "0xba0549c3c478d32CA92802A10313Ccc60eD081fb", id: "woof-sdog-balance" },
+            { name: "ELON/WOOF", address: "0x8d4C2E2D5c4e3B72c9be0db47E60121150046C32", id: "elon-woof-balance" },
+            { name: "WOOF/BONES", address: "0xE424E1d17EF970A1b04E84540f5123fC5635D77d", id: "woof-bones-balance" },
+            { name: "Snow Ball", address: "0x2778f7E40D90DB18203Ec31C9c5F84fde6cf6763", id: "snow-ball-balance" },
+            { name: "WOOF/BINU", address: "0x9D7C932d2857ffdc61851276a46A3c3570129012", id: "woof-binu-balance" },
+            { name: "SOON/WOOF", address: "0xBA29bC84B30B6f478846B06EF7a1eD52f55A0066", id: "soon-woof-balance" },
+            { name: "WOOFS/WOOF", address: "0x7c08cb6688e9515FC5d629Bae7056cF8d5E75Bb9", id: "woofs-woof-balance" },
+            { name: "PEPE/WOOF", address: "0x36d71Cd4f1dDEE3ED04Af24E0eD4EAC16C923DAD", id: "pepe-woof-balance" },
+            { name: "DOGES/WOOF", address: "0xF01dfd25bc71B5E27C60De6F1cBF9b5dA3ef6029", id: "doges-woof-balance" },
+            { name: "PUNK/WOOF", address: "0xb2Eb3fDC0F64683931Ce1dAEb96aFAcFae0730bd", id: "punk-woof-balance" },
+            { name: "Tang/WOOF", address: "0xf9d410BEd25Cc0cc6f078020149E4944C672Cc42", id: "tang-woof-balance" },
+            { name: "WOOF/Zen", address: "0x505fccCf8b0142f14953c77e6A507C09cf131b03", id: "woof-zen-balance" },
+            { name: "WOOF/SBTC", address: "0x700e68C03e41fAa9cA94aaD8d78fAd06d374ffB3", id: "woof-sbtc-balance" }
+        ];
+
+        // ERC20 ABI for querying total supply and balances
+        const ERC20_ABI = [
+            {
+                "constant": true,
+                "inputs": [],
+                "name": "totalSupply",
+                "outputs": [{ "name": "", "type": "uint256" }],
+                "stateMutability": "view",
+                "type": "function"
+            },
+            {
+                "constant": true,
+                "inputs": [{ "name": "account", "type": "address" }],
+                "name": "balanceOf",
+                "outputs": [{ "name": "", "type": "uint256" }],
+                "stateMutability": "view",
+                "type": "function"
+            },
+            {
+                "constant": true,
+                "inputs": [],
+                "name": "decimals",
+                "outputs": [{ "name": "", "type": "uint8" }],
+                "stateMutability": "view",
+                "type": "function"
+            }
+        ];
+
+        // Initialize Web3
+        async function initializeWeb3() {
+            const rpcUrl = document.getElementById("rpcUrl").value.trim();
+            const status = document.getElementById("status");
+            const expectedChainId = 109; // Shibarium Chain ID
+
+            if (!rpcUrl) {
+                status.textContent += "Error: Please provide a valid Shibarium RPC URL.\n";
+                return null;
+            }
+
+            const web3 = new Web3(new Web3.providers.HttpProvider(rpcUrl));
+            try {
+                status.textContent += "Testing RPC connection...\n";
+                const chainId = await web3.eth.getChainId();
+                status.textContent += `Connected to chain ID: ${chainId} (Shibarium should be 109)\n`;
+                if (chainId !== expectedChainId) {
+                    status.textContent += "Error: Not connected to Shibarium network (chain ID should be 109).\n";
+                    return null;
+                }
+                return web3;
+            } catch (error) {
+                status.textContent += `Error: Failed to connect to RPC: ${error.message}\n`;
+                return null;
+            }
+        }
+
+        // Check circulating supply
+        async function checkCirculatingSupply() {
+            const status = document.getElementById("status");
+            const result = document.getElementById("result");
+            status.textContent = "Status: Starting...\n";
+            result.innerHTML = "";
+
+            // Clear previous balances
+            ADDRESSES_TO_CHECK.forEach(item => {
+                document.getElementById(item.id).textContent = "";
+            });
+
+            const web3 = await initializeWeb3();
+            if (!web3) return;
+
+            try {
+                const woofContract = new web3.eth.Contract(ERC20_ABI, WOOF_CONTRACT_ADDRESS);
+
+                // Get token decimals
+                const decimals = await woofContract.methods.decimals().call();
+                const divisor = Math.pow(10, decimals);
+
+                // Get total supply
+                const totalSupplyWei = await woofContract.methods.totalSupply().call();
+                const totalSupply = (parseFloat(totalSupplyWei) / divisor).toFixed(2);
+                status.textContent += `WOOF Total Supply: ${totalSupply} WOOF\n`;
+
+                let totalLocked = web3.utils.toBN(0);
+
+                // Query all balances concurrently
+                const balancePromises = ADDRESSES_TO_CHECK.map(async item => {
+                    try {
+                        const balanceWei = await woofContract.methods.balanceOf(item.address).call();
+                        const balance = web3.utils.toBN(balanceWei);
+                        const balanceFormatted = (parseFloat(balanceWei) / divisor).toFixed(2);
+                        document.getElementById(item.id).textContent = `${balanceFormatted} WOOF`;
+                        status.textContent += `Checked ${item.name}: ${balanceFormatted} WOOF\n`;
+                        return balance;
+                    } catch (error) {
+                        status.textContent += `Error checking ${item.name}: ${error.message}\n`;
+                        document.getElementById(item.id).textContent = "Error";
+                        return web3.utils.toBN(0);
+                    }
+                });
+
+                // Wait for all balance queries to complete
+                const balances = await Promise.all(balancePromises);
+
+                // Sum locked balances
+                totalLocked = balances.reduce((sum, balance) => sum.add(balance), web3.utils.toBN(0));
+                const totalLockedFormatted = (parseFloat(totalLocked) / divisor).toFixed(2);
+
+                // Calculate circulating supply
+                const circulatingSupply = web3.utils.toBN(totalSupplyWei).sub(totalLocked);
+                const circulatingSupplyFormatted = (parseFloat(circulatingSupply) / divisor).toFixed(2);
+
+                // Display summarized result
+                status.textContent += `All balances queried.\n`;
+                result.innerHTML = `
+                    <h3>WOOF Circulating Supply Summary</h3>
+                    <p><strong>Total Supply:</strong> ${totalSupply} WOOF</p>
+                    <p><strong>Total Locked:</strong> ${totalLockedFormatted} WOOF</p>
+                    <p><strong>Circulating Supply:</strong> ${circulatingSupplyFormatted} WOOF</p>
+                `;
+            } catch (error) {
+                status.textContent += `Error: ${error.message}\n`;
+            }
+        }
+
+        // Clear status
+        function clearStatus() {
+            document.getElementById("status").textContent = "Status: Ready";
+            document.getElementById("result").innerHTML = "";
+            ADDRESSES_TO_CHECK.forEach(item => {
+                document.getElementById(item.id).textContent = "";
+            });
+        }
+    </script>
+</body>
+</html>
